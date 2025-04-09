@@ -7,29 +7,30 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Improved CORS setup
 const allowedOrigins = ['https://todo-app-ao23.vercel.app'];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy does not allow access from the specified origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
-// Handle preflight requests (important for some browsers)
-app.options('*', cors());
 
-// Middleware
 app.use(express.json());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB error:', err));
 
 // Routes
-app.use('/api/todos', require('./routes/todoRoutes'));
+app.use('/api/todos', require('../routes/todoRoutes'));
 
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// ✅ Export the Express app (no app.listen)
+module.exports = app;
