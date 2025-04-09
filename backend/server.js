@@ -8,7 +8,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://todo-app-ao23.vercel.app", // frontend domain
+  credentials: true // if you’re using cookies or auth headers
+}));
 app.use(express.json());
 
 // MongoDB Connection
